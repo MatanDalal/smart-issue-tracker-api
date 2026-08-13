@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
@@ -30,7 +30,10 @@ def home():
 
 # CREATE - Create a new Issue
 @app.post("/issues")
-def create_issue(issue: Issue, db: Session = Depends(get_db)):
+def create_issue(
+    issue: Issue,
+    db: Session = Depends(get_db)
+):
     new_issue = models.IssueModel(
         title=issue.title,
         description=issue.description,
@@ -45,21 +48,27 @@ def create_issue(issue: Issue, db: Session = Depends(get_db)):
     return new_issue
 
 
-# READ - Get all Issues with optional filtering and search
+# READ - Get all Issues with optional filtering, search and pagination
 @app.get("/issues")
 def get_issues(
     status: Literal["open", "in_progress", "resolved", "closed"] | None = None,
     priority: Literal["low", "medium", "high"] | None = None,
     search: str | None = None,
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: Session = Depends(get_db)
 ):
     query = select(models.IssueModel)
 
     if status is not None:
-        query = query.where(models.IssueModel.status == status)
+        query = query.where(
+            models.IssueModel.status == status
+        )
 
     if priority is not None:
-        query = query.where(models.IssueModel.priority == priority)
+        query = query.where(
+            models.IssueModel.priority == priority
+        )
 
     if search is not None:
         query = query.where(
@@ -69,6 +78,8 @@ def get_issues(
             )
         )
 
+    query = query.offset(offset).limit(limit)
+
     issues = db.scalars(query).all()
 
     return issues
@@ -76,8 +87,14 @@ def get_issues(
 
 # READ - Get one Issue by ID
 @app.get("/issues/{issue_id}")
-def get_issue(issue_id: int, db: Session = Depends(get_db)):
-    issue = db.get(models.IssueModel, issue_id)
+def get_issue(
+    issue_id: int,
+    db: Session = Depends(get_db)
+):
+    issue = db.get(
+        models.IssueModel,
+        issue_id
+    )
 
     if issue is None:
         raise HTTPException(
@@ -95,7 +112,10 @@ def update_issue(
     updated_issue: Issue,
     db: Session = Depends(get_db)
 ):
-    issue = db.get(models.IssueModel, issue_id)
+    issue = db.get(
+        models.IssueModel,
+        issue_id
+    )
 
     if issue is None:
         raise HTTPException(
@@ -116,8 +136,14 @@ def update_issue(
 
 # DELETE - Delete an Issue by ID
 @app.delete("/issues/{issue_id}")
-def delete_issue(issue_id: int, db: Session = Depends(get_db)):
-    issue = db.get(models.IssueModel, issue_id)
+def delete_issue(
+    issue_id: int,
+    db: Session = Depends(get_db)
+):
+    issue = db.get(
+        models.IssueModel,
+        issue_id
+    )
 
     if issue is None:
         raise HTTPException(
