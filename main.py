@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Depends, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from typing import Literal
+from datetime import datetime
 
 import models
 from database import engine, get_db
@@ -22,6 +23,19 @@ class Issue(BaseModel):
     status: Literal["open", "in_progress", "resolved", "closed"] = "open"
 
 
+# Define the structure of an Issue returned by the API
+class IssueResponse(BaseModel):
+    id: int
+    title: str
+    description: str
+    priority: Literal["low", "medium", "high"]
+    status: Literal["open", "in_progress", "resolved", "closed"]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 # Root endpoint
 @app.get("/")
 def home():
@@ -29,7 +43,7 @@ def home():
 
 
 # CREATE - Create a new Issue
-@app.post("/issues")
+@app.post("/issues", response_model=IssueResponse)
 def create_issue(
     issue: Issue,
     db: Session = Depends(get_db)
@@ -49,7 +63,7 @@ def create_issue(
 
 
 # READ - Get all Issues with optional filtering, search and pagination
-@app.get("/issues")
+@app.get("/issues", response_model=list[IssueResponse])
 def get_issues(
     status: Literal["open", "in_progress", "resolved", "closed"] | None = None,
     priority: Literal["low", "medium", "high"] | None = None,
@@ -86,7 +100,7 @@ def get_issues(
 
 
 # READ - Get one Issue by ID
-@app.get("/issues/{issue_id}")
+@app.get("/issues/{issue_id}", response_model=IssueResponse)
 def get_issue(
     issue_id: int,
     db: Session = Depends(get_db)
@@ -106,7 +120,7 @@ def get_issue(
 
 
 # UPDATE - Update an existing Issue
-@app.put("/issues/{issue_id}")
+@app.put("/issues/{issue_id}", response_model=IssueResponse)
 def update_issue(
     issue_id: int,
     updated_issue: Issue,
