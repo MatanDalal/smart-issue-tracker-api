@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime, func
 from database import Base
 
 class IssueModel(Base):
@@ -9,3 +9,4 @@ class IssueModel(Base):
     description = Column(String)
     priority = Column(String)
     status = Column(String, default="open")
+    created_at = Column(DateTime, server_default=func.now())
