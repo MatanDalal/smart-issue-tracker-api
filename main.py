@@ -45,12 +45,23 @@ def create_issue(issue: Issue, db: Session = Depends(get_db)):
     return new_issue
 
 
-# READ - Get all Issues
+
+# READ - Get all Issues with optional status and priority filtering
 @app.get("/issues")
-def get_issues(db: Session = Depends(get_db)):
-    issues = db.scalars(
-        select(models.IssueModel)
-    ).all()
+def get_issues(
+    status: Literal["open", "in_progress", "resolved", "closed"] | None = None,
+    priority: Literal["low", "medium", "high"] | None = None,
+    db: Session = Depends(get_db)
+):
+    query = select(models.IssueModel)
+
+    if status is not None:
+        query = query.where(models.IssueModel.status == status)
+
+    if priority is not None:
+        query = query.where(models.IssueModel.priority == priority)
+
+    issues = db.scalars(query).all()
 
     return issues
 
