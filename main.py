@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from typing import Literal
 
@@ -45,12 +45,12 @@ def create_issue(issue: Issue, db: Session = Depends(get_db)):
     return new_issue
 
 
-
-# READ - Get all Issues with optional status and priority filtering
+# READ - Get all Issues with optional filtering and search
 @app.get("/issues")
 def get_issues(
     status: Literal["open", "in_progress", "resolved", "closed"] | None = None,
     priority: Literal["low", "medium", "high"] | None = None,
+    search: str | None = None,
     db: Session = Depends(get_db)
 ):
     query = select(models.IssueModel)
@@ -60,6 +60,14 @@ def get_issues(
 
     if priority is not None:
         query = query.where(models.IssueModel.priority == priority)
+
+    if search is not None:
+        query = query.where(
+            or_(
+                models.IssueModel.title.contains(search),
+                models.IssueModel.description.contains(search)
+            )
+        )
 
     issues = db.scalars(query).all()
 
