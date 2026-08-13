@@ -8,3 +8,4 @@ class IssueModel(Base):
     title = Column(String)
     description = Column(String)
     priority = Column(String)
+    status = Column(String, default="open")
