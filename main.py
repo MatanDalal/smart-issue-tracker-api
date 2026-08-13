@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, Query
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from typing import Literal
@@ -17,10 +17,21 @@ models.Base.metadata.create_all(bind=engine)
 
 # Define the structure of an Issue received from the user
 class Issue(BaseModel):
-    title: str
-    description: str
+    title: str = Field(min_length=1, max_length=100)
+    description: str = Field(min_length=1, max_length=1000)
     priority: Literal["low", "medium", "high"]
     status: Literal["open", "in_progress", "resolved", "closed"] = "open"
+
+    # Prevent empty values or values containing only spaces
+    @field_validator("title", "description")
+    @classmethod
+    def validate_not_blank(cls, value: str) -> str:
+        value = value.strip()
+
+        if not value:
+            raise ValueError("Value cannot be empty")
+
+        return value
 
 
 # Define the structure of an Issue returned by the API
