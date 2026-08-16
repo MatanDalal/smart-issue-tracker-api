@@ -3,13 +3,16 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+# Allowed values used across the API
+Priority = Literal["low", "medium", "high"]
+IssueStatus = Literal["open", "in_progress", "resolved", "closed"]
 
 # Define the structure of an Issue received from the user
 class Issue(BaseModel):
     title: str = Field(min_length=1, max_length=100)
     description: str = Field(min_length=1, max_length=1000)
-    priority: Literal["low", "medium", "high"]
-    status: Literal["open", "in_progress", "resolved", "closed"] = "open"
+    priority: Priority
+    status: IssueStatus = "open"
 
     # Prevent empty values or values containing only spaces
     @field_validator("title", "description")
@@ -28,8 +31,8 @@ class IssueResponse(BaseModel):
     id: int
     title: str
     description: str
-    priority: Literal["low", "medium", "high"]
-    status: Literal["open", "in_progress", "resolved", "closed"]
+    priority: Priority
+    status: IssueStatus
     created_at: datetime
     updated_at: datetime
 

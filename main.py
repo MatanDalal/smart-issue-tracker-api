@@ -1,25 +1,20 @@
 from fastapi import FastAPI, HTTPException, Depends, Query
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
-from typing import Literal
-
 
 import models
 from database import engine, get_db
-from schemas import Issue, IssueResponse
-
+from schemas import Issue, IssueResponse, Priority, IssueStatus
 
 app = FastAPI()
 
 # Create database tables if they do not exist
 models.Base.metadata.create_all(bind=engine)
 
-
 # Root endpoint
 @app.get("/")
 def home():
     return {"message": "Smart Issue Tracker API"}
-
 
 # CREATE - Create a new Issue
 @app.post("/issues", response_model=IssueResponse)
@@ -40,12 +35,11 @@ def create_issue(
 
     return new_issue
 
-
 # READ - Get all Issues with optional filtering, search and pagination
 @app.get("/issues", response_model=list[IssueResponse])
 def get_issues(
-    status: Literal["open", "in_progress", "resolved", "closed"] | None = None,
-    priority: Literal["low", "medium", "high"] | None = None,
+    status: IssueStatus | None = None,
+    priority: Priority | None = None,
     search: str | None = None,
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
