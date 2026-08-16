@@ -4,6 +4,11 @@ A RESTful Issue Tracking API built with FastAPI, SQLAlchemy, Pydantic, and SQLit
 
 The application allows users to create, view, update, delete, search, filter, and paginate software issues through a structured API.
 
+## Live Demo
+
+- Live API: https://smart-issue-tracker-api.onrender.com
+- Swagger API Documentation: https://smart-issue-tracker-api.onrender.com/docs
+
 ## Features
 
 - Create new issues
@@ -19,6 +24,7 @@ The application allows users to create, view, update, delete, search, filter, an
 - Automatic creation and update timestamps
 - Structured API response models
 - Automatic interactive API documentation with Swagger UI
+- Public deployment on Render
 
 ## Issue Fields
 
@@ -40,6 +46,7 @@ Each issue contains:
 - Pydantic
 - SQLite
 - Uvicorn
+- Render
 - Git / GitHub
 
 ## Project Structure
@@ -67,7 +74,7 @@ smart-issue-tracker-api/
 ## API Endpoints
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| --- | --- | --- |
 | GET | `/` | API health/root endpoint |
 | POST | `/issues` | Create a new issue |
 | GET | `/issues` | Get issues with optional filters, search, and pagination |
@@ -172,13 +179,13 @@ Start the FastAPI development server:
 uvicorn main:app --reload
 ```
 
-The API will be available at:
+The local API will be available at:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-Interactive Swagger documentation:
+Local Swagger documentation:
 
 ```text
 http://127.0.0.1:8000/docs
@@ -220,7 +227,7 @@ Planned improvements include:
 - Authentication and users
 - Issue assignment
 - Additional sorting options
-- Production deployment
+- Migration from SQLite to a production database such as PostgreSQL
 
 ## Author
 
