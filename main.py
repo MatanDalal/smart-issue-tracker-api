@@ -1,50 +1,18 @@
 from fastapi import FastAPI, HTTPException, Depends, Query
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from typing import Literal
-from datetime import datetime
+
 
 import models
 from database import engine, get_db
+from schemas import Issue, IssueResponse
 
 
 app = FastAPI()
 
 # Create database tables if they do not exist
 models.Base.metadata.create_all(bind=engine)
-
-
-# Define the structure of an Issue received from the user
-class Issue(BaseModel):
-    title: str = Field(min_length=1, max_length=100)
-    description: str = Field(min_length=1, max_length=1000)
-    priority: Literal["low", "medium", "high"]
-    status: Literal["open", "in_progress", "resolved", "closed"] = "open"
-
-    # Prevent empty values or values containing only spaces
-    @field_validator("title", "description")
-    @classmethod
-    def validate_not_blank(cls, value: str) -> str:
-        value = value.strip()
-
-        if not value:
-            raise ValueError("Value cannot be empty")
-
-        return value
-
-
-# Define the structure of an Issue returned by the API
-class IssueResponse(BaseModel):
-    id: int
-    title: str
-    description: str
-    priority: Literal["low", "medium", "high"]
-    status: Literal["open", "in_progress", "resolved", "closed"]
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 # Root endpoint
